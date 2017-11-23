@@ -3,7 +3,6 @@ var CallLater = {
 	// id
 	id: {},
 	count: {},
-	//{delay: Number, tickcount: Number, onUpdate: function, onComplete: function}
 
 	/**
 	* Таймер с таким ключем запустить
@@ -13,7 +12,8 @@ var CallLater = {
 	* то функция будет исполнаяться пока не выполнеться CallLater.finish
 	* @returns key - ключ, по которому потом можно будет удалить таймер
 	*/
-	start: function (func, ms, count) {
+	start: function (func, ms, count)
+	{
 		key = (Math.floor(Math.random() * (999999 - 1 + 1)) + 1);
 
 		// Проверка на 2 одинаковых ключа
@@ -21,19 +21,25 @@ var CallLater = {
 
 		CallLater.count[key] = 0;
 
-		if (count === 1) {
-			CallLater.id[key] = setTimeout(function () {
+		if (count === 1)
+		{
+			CallLater.id[key] = setTimeout(function ()
+			{
 				CallLater.count[key]++;
 				func();
 				CallLater.finish(key);
 			}, ms);
-		} else {
-			CallLater.id[key] = setInterval(function () {
-				if (CallLater.count[key] !== count || count === 0 || typeof count === 'undefined') {
+		} else
+		{
+			CallLater.id[key] = setInterval(function ()
+			{
+				if (CallLater.count[key] !== count || count === 0 || typeof count === 'undefined')
+				{
 					CallLater.count[key]++;
 					func();
 				}
-				if (CallLater.count[key] === count && count !== 0) {
+				if (CallLater.count[key] === count && count !== 0)
+				{
 					CallLater.finish(key);
 				}
 			}, ms);
@@ -47,15 +53,19 @@ var CallLater = {
 	* @param key - ключ по которму нужно удaлить
 	* Если @param key не указан удаляем все
 	*/
-	finish: function (key) {
-		if (typeof key !== 'undefined') {
+	finish: function (key)
+	{
+		if (typeof key !== 'undefined')
+		{
 			clearTimeout(CallLater.id[key]);
 			clearInterval(CallLater.id[key]);
 
 			delete CallLater.id[key];
 			delete CallLater.count[key];
-		} else {
-			Object.keys(CallLater.id).forEach(function (key) {
+		} else
+		{
+			Object.keys(CallLater.id).forEach(function (key)
+			{
 				clearTimeout(CallLater.id[key]);
 				clearInterval(CallLater.id[key]);
 
@@ -70,7 +80,8 @@ var CallLater = {
 		 * Проверка таймера по ключу
 		 * @param key - ключ по которому проверяеся существование
 		 */
-		exists: function (key) {
+		exists: function (key)
+		{
 			return key in CallLater.id;
 		},
 	},
