@@ -7,7 +7,6 @@ var CallLater = {
 	key: 0,
 	interval: 0,
 	sessions: {},
-	options: {speed: 50},
 	//endregion
 
 	// region Публичные функции
