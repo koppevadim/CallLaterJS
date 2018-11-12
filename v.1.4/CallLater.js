@@ -28,8 +28,6 @@ var CallLater = {
 		if(typeof onUpdate === 'undefined' && typeof onComplete === 'undefined')
 		{
 			throw new Error('onUpdate and/or onComplete must be set');
-
-			return 0;
 		}
 
 		CallLater.sessions[CallLater.key] = {};
@@ -278,8 +276,8 @@ var CallLater = {
 			*/
 			interval: function()
 			{
-				cancelAnimationFrame(CallLater.interval);
-				CallLater.interval = 0;
+				cancelAnimationFrame(CallLater.index);
+				CallLater.index = 0;
 			},
 		},
 	},
@@ -288,9 +286,11 @@ var CallLater = {
 	//region Обработчик таймера. Приватная функция
 	updater: function(data)
 	{
-		var id = requestAnimationFrame(function updater()
+		var id;
+		id = requestAnimationFrame(function updater()
 		{
 			data.update();
+
 			id = requestAnimationFrame(updater);
 		});
 
