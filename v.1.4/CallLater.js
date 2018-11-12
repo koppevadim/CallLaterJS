@@ -5,7 +5,7 @@
 var CallLater = {
 	// region Свойства
 	key: 0,
-	interval: 0,
+	index: 0,
 	sessions: {},
 	//endregion
 
@@ -77,9 +77,9 @@ var CallLater = {
 			}
 		};
 
-		if(CallLater.interval === 0)
+		if(CallLater.index === 0)
 		{
-			CallLater.interval = CallLater.interval({
+			CallLater.index = CallLater.updater({
 				update: function()
 				{
 					for(var key in CallLater.sessions)
@@ -286,12 +286,12 @@ var CallLater = {
 	//endregion
 
 	//region Обработчик таймера. Приватная функция
-	interval: function(data)
+	updater: function(data)
 	{
-		var id = requestAnimationFrame(function interval()
+		var id = requestAnimationFrame(function updater()
 		{
 			data.update();
-			id = requestAnimationFrame(interval);
+			id = requestAnimationFrame(updater);
 		});
 
 		return id;
