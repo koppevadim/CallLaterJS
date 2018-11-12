@@ -286,15 +286,15 @@ var CallLater = {
 	//region Обработчик таймера. Приватная функция
 	updater: function(data)
 	{
-		var id;
-		id = requestAnimationFrame(function updater()
+		CallLater.index = requestAnimationFrame(function updater()
 		{
 			data.update();
 
-			id = requestAnimationFrame(updater);
+			if(CallLater.session.count !== 0)
+			{
+				CallLater.index = requestAnimationFrame(updater);
+			}
 		});
-
-		return id;
 	},
 	//endregion
 };
