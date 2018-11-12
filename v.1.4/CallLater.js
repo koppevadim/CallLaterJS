@@ -77,7 +77,7 @@ var CallLater = {
 
 		if(CallLater.index === 0)
 		{
-			CallLater.index = CallLater.updater({
+			CallLater.updater({
 				update: function()
 				{
 					for(var key in CallLater.sessions)
