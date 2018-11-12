@@ -28,10 +28,12 @@ var CallLater = {
 	* @param {any} onCompleteParams - Параметры котороые передаются в функцию onComplete. Не обязательный параметр.
 	* @returns {number} key - сгенерированый ключ
 	*/
-	start: function ({ onUpdate, onComplete, onUpdateParams, onCompleteParams, amount = 0, delay = 1000, autodelete = true }) {
+	start: function({onUpdate, onComplete, onUpdateParams, onCompleteParams, amount = 0, delay = 1000, autodelete = true})
+	{
 		CallLater.key++;
 
-		if (typeof onUpdate === 'undefined' && typeof onComplete === 'undefined') {
+		if(typeof onUpdate === 'undefined' && typeof onComplete === 'undefined')
+		{
 			throw new Error('onUpdate and/or onComplete must be set');
 
 			return 0;
@@ -45,30 +47,37 @@ var CallLater = {
 		CallLater.sessions[CallLater.key].autodelete = autodelete;
 		CallLater.sessions[CallLater.key].time = new Date().getTime();
 
-		CallLater.sessions[CallLater.key].func = function () {
+		CallLater.sessions[CallLater.key].func = function()
+		{
 			CallLater.sessions[CallLater.key].time = new Date().getTime();
 
-			if (CallLater.sessions[CallLater.key].count !== amount || amount === 0 || typeof amount === 'undefined') {
+			if(CallLater.sessions[CallLater.key].count !== amount || amount === 0 || typeof amount === 'undefined')
+			{
 				CallLater.sessions[CallLater.key].count++;
 			}
 
-			if (CallLater.sessions[CallLater.key].count === amount && amount !== 0) {
+			if(CallLater.sessions[CallLater.key].count === amount && amount !== 0)
+			{
 
 				CallLater.sessions[CallLater.key].complete = true;
 
-				if (typeof onComplete !== 'undefined') {
+				if(typeof onComplete !== 'undefined')
+				{
 					onComplete(CallLater.sessions[CallLater.key], onCompleteParams);
 				}
 
-				if (CallLater.sessions[CallLater.key].autodelete) {
+				if(CallLater.sessions[CallLater.key].autodelete)
+				{
 					CallLater.session.kill.key(CallLater.key);
 				}
-			} else if (typeof onUpdate !== 'undefined') {
+			} else if(typeof onUpdate !== 'undefined')
+			{
 				onUpdate(CallLater.sessions[CallLater.key], onUpdateParams);
 			}
 		};
 
-		if (CallLater.interval === 0) {
+		if(CallLater.interval === 0)
+		{
 			CallLater.interval = setInterval(CallLater.onInterval, 50);
 		}
 
@@ -81,7 +90,8 @@ var CallLater = {
 		 * @param key - ключ по которому проверяеся существование
 		 * @returns key
 		 */
-		exists: function (key) {
+		exists: function(key)
+		{
 			return key in CallLater.sessions;
 		},
 
@@ -89,7 +99,8 @@ var CallLater = {
 		 * Количество таймеров
 		 * @returns количество
 		 */
-		get count() {
+		get count()
+		{
 			return Object.keys(CallLater.sessions).length;
 		},
 
@@ -97,26 +108,31 @@ var CallLater = {
 		 * Проверка на то что таймер закончил все условия либо еще выполняется.
 		 * @returns количество
 		 */
-		complete: function (key) {
+		complete: function(key)
+		{
 			return CallLater.sessions[key].complete;
 		},
 
-		isPaused: function (key) {
+		isPaused: function(key)
+		{
 			return CallLater.sessions[key].pause;
 		},
 
 		set: {
-			pause: function (key) {
+			pause: function(key)
+			{
 				CallLater.sessions[key].pause = true;
 			},
 
-			unpause: function (key) {
+			unpause: function(key)
+			{
 				CallLater.sessions[key].pause = false;
 				CallLater.sessions[CallLater.key].time = new Date().getTime();
 			},
 		},
 
-		reset: function (key) {
+		reset: function(key)
+		{
 			CallLater.sessions[CallLater.key].time = new Date().getTime();
 			CallLater.sessions[CallLater.key].count = 0;
 		},
@@ -128,22 +144,27 @@ var CallLater = {
 			/**
 			* Все
 			*/
-			all: function () {
-				for (var key in CallLater.sessions) {
+			all: function()
+			{
+				for(var key in CallLater.sessions)
+				{
 					delete CallLater.sessions[key];
 				}
 
-				if (CallLater.session.count === 0) {
+				if(CallLater.session.count === 0)
+				{
 					CallLater.session.kill.interval();
 				}
 			},
 			/**
 			* Конкретный
 			*/
-			key: function (key) {
+			key: function(key)
+			{
 				delete CallLater.sessions[key];
 
-				if (CallLater.session.count === 0) {
+				if(CallLater.session.count === 0)
+				{
 					CallLater.session.kill.interval();
 				}
 			},
@@ -151,7 +172,8 @@ var CallLater = {
 			/**
 			* Интервал
 			*/
-			interval: function () {
+			interval: function()
+			{
 				clearInterval(CallLater.interval);
 				CallLater.interval = 0;
 			},
@@ -160,9 +182,12 @@ var CallLater = {
 	//endregion
 
 	//region Обработчик таймера. Приватная функция
-	onInterval: function () {
-		for (var key in CallLater.sessions) {
-			if (!CallLater.sessions[key].pause && CallLater.sessions[key].delay <= (new Date().getTime() - CallLater.sessions[key].time)) {
+	onInterval: function()
+	{
+		for(var key in CallLater.sessions)
+		{
+			if(!CallLater.sessions[key].pause && CallLater.sessions[key].delay <= (new Date().getTime() - CallLater.sessions[key].time))
+			{
 				CallLater.sessions[key].func();
 			}
 		}

@@ -1,27 +1,25 @@
-//IMP: Version 1.3.1
+//IMP: Version 1.4
 
-// Теперь параметры для onUpdate и onComplete принимают массив данных.
-// Добавлена возможность менять все параметры ссесии на лету.
-// Исправлена функция reset. Теперь сбрасывается и пауза, если она была установлена.
+// Вместо Интервала теперь используется requestAnimationFrame
 
 var CallLater = {
-	//region Свойства
+	// region Свойства
 	key: 0,
 	interval: 0,
 	sessions: {},
 	options: {speed: 50},
 	//endregion
 
-	//region Публичные функции
+	// region Публичные функции
 	/**
 	* Таймер с таким ключем запустить
 	* @param {number} delay   - Через какой интервал будет срабатывать таймер. Обязательный параметр.
 	* @param {number} amount - Количество раз, которое сработает таймер. Не обязательный параметр.
-	* @param {number} autodelete - Удоление сессии таймера после выполнения всех условий.
+	* @param {number} autodelete - Удаление сессии таймера после выполнения всех условий.
 	* @param {function} onUpdate - Функция котороая вызывается при срабатывании таймера. Не обязательный параметр.
-	* @param {Array} onUpdateParams - Параметры котороые передаются в функцию onUpdate. Не обязательный параметр.
+	* @param {any} onUpdateParams - Параметры котороые передаются в функцию onUpdate. Не обязательный параметр.
 	* @param {function} onComplete - Функция котороая вызывается при последнем срабатывании таймера. Не обязательный параметр.
-	* @param {Array} onCompleteParams - Параметры котороые передаются в функцию onComplete. Не обязательный параметр.
+	* @param {any} onCompleteParams - Параметры котороые передаются в функцию onComplete. Не обязательный параметр.
 	* @returns {number} key - сгенерированый ключ
 	*/
 	start: function({onUpdate, onComplete, onUpdateParams, onCompleteParams, amount = 0, delay = 1000, autodelete = true} = {})
@@ -59,7 +57,6 @@ var CallLater = {
 
 			if(CallLater.sessions[CallLater.key].count === amount && amount !== 0)
 			{
-
 				CallLater.sessions[CallLater.key].complete = true;
 
 				if(typeof onComplete !== 'undefined')
@@ -83,7 +80,18 @@ var CallLater = {
 
 		if(CallLater.interval === 0)
 		{
-			CallLater.interval = setInterval(CallLater.onInterval, CallLater.options.speed);
+			CallLater.interval = CallLater.interval({
+				update: function()
+				{
+					for(var key in CallLater.sessions)
+					{
+						if(!CallLater.sessions[key].pause && CallLater.sessions[key].delay <= Date.now() - CallLater.sessions[key].time)
+						{
+							CallLater.sessions[key].func();
+						}
+					}
+				}
+			});
 		}
 
 		return CallLater.key;
@@ -120,35 +128,90 @@ var CallLater = {
 
 		isPaused: function(key)
 		{
-			return CallLater.sessions[key].pause;
+			if(typeof key !== 'undefined')
+			{
+				return CallLater.sessions[key].pause;
+			} else
+			{
+				var array = [];
+				for(var key in CallLater.sessions)
+				{
+					if(CallLater.sessions[key].pause)
+					{
+						array.push(key);
+					}
+				}
+				return array;
+			}
 		},
 
 		pause: function(key)
 		{
-			if(!CallLater.sessions[key].pause)
+			if(typeof key !== 'undefined')
 			{
-				CallLater.sessions[key].pause = true;
-				CallLater.sessions[key].pausetime = Date.now() - CallLater.sessions[key].time;
+				if(!CallLater.sessions[key].pause)
+				{
+					CallLater.sessions[key].pause = true;
+					CallLater.sessions[key].pausetime = Date.now() - CallLater.sessions[key].time;
+				}
+			} else
+			{
+				for(var key in CallLater.sessions)
+				{
+					if(!CallLater.sessions[key].pause)
+					{
+						CallLater.sessions[key].pause = true;
+						CallLater.sessions[key].pausetime = Date.now() - CallLater.sessions[key].time;
+					}
+				}
 			}
 		},
 
 		resume: function(key)
 		{
-			if(CallLater.sessions[key].pause)
+			if(typeof key !== 'undefined')
 			{
-				CallLater.sessions[key].pause = false;
-				CallLater.sessions[CallLater.key].time = Date.now() - CallLater.sessions[key].pausetime;
+				if(CallLater.sessions[key].pause)
+				{
+					CallLater.sessions[key].pause = false;
+					CallLater.sessions[CallLater.key].time = Date.now() - CallLater.sessions[key].pausetime;
 
-				delete CallLater.sessions[key].pausetime;
+					delete CallLater.sessions[key].pausetime;
+				}
+			} else
+			{
+				for(var key in CallLater.sessions)
+				{
+					if(CallLater.sessions[key].pause)
+					{
+						CallLater.sessions[key].pause = false;
+						CallLater.sessions[CallLater.key].time = Date.now() - CallLater.sessions[key].pausetime;
+
+						delete CallLater.sessions[key].pausetime;
+					}
+				}
 			}
+
 		},
 
 		reset: function(key)
 		{
-			CallLater.session.resume(key);
+			if(typeof key !== 'undefined')
+			{
+				CallLater.session.resume(key);
 
-			CallLater.sessions[CallLater.key].time = Date.now();
-			CallLater.sessions[CallLater.key].count = 0;
+				CallLater.sessions[CallLater.key].time = Date.now();
+				CallLater.sessions[CallLater.key].count = 0;
+			} else
+			{
+				for(var key in CallLater.sessions)
+				{
+					CallLater.session.resume(key);
+
+					CallLater.sessions[CallLater.key].time = Date.now();
+					CallLater.sessions[CallLater.key].count = 0;
+				}
+			}
 		},
 
 		change: {
@@ -216,7 +279,7 @@ var CallLater = {
 			*/
 			interval: function()
 			{
-				clearInterval(CallLater.interval);
+				cancelAnimationFrame(CallLater.interval);
 				CallLater.interval = 0;
 			},
 		},
@@ -224,15 +287,15 @@ var CallLater = {
 	//endregion
 
 	//region Обработчик таймера. Приватная функция
-	onInterval: function()
+	interval: function(data)
 	{
-		for(var key in CallLater.sessions)
+		var id = requestAnimationFrame(function interval()
 		{
-			if(!CallLater.sessions[key].pause && CallLater.sessions[key].delay <= Date.now() - CallLater.sessions[key].time)
-			{
-				CallLater.sessions[key].func();
-			}
-		}
+			data.update();
+			id = requestAnimationFrame(interval);
+		});
+
+		return id;
 	},
 	//endregion
 };
